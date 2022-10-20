@@ -1,4 +1,5 @@
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -6,12 +7,9 @@ public class MovieAnalyzer {
     List<String[]> list = new ArrayList<>();
 
     public MovieAnalyzer(String dataset_path) {
-        BufferedWriter writer;
         BufferedReader reader;
         try {
-            FileReader reader1 = new FileReader(dataset_path);
-            FileWriter writer1 = new FileWriter(dataset_path, true);
-            writer = new BufferedWriter(writer1);
+            FileReader reader1 = new FileReader(dataset_path, StandardCharsets.UTF_8);
             reader = new BufferedReader(reader1);
             String info;
             reader.readLine();
@@ -22,7 +20,6 @@ public class MovieAnalyzer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     public String[] getArr(String str) {
@@ -74,13 +71,12 @@ public class MovieAnalyzer {
     }
 
     public void add(String[] stars, Map<List<String>, Integer> map) {
-        Object[] obj=Arrays.stream(stars).distinct().toArray();
 
-        for (int i = 0; i < obj.length; ++i) {
-            for (int j = i + 1; j < obj.length; ++j) {
+        for (int i = 0; i < stars.length; ++i) {
+            for (int j = i + 1; j < stars.length; ++j) {
                 List<String> list = new ArrayList<>();
-                list.add(String.valueOf(obj[i]));
-                list.add(String.valueOf(obj[j]));
+                list.add(String.valueOf(stars[i]));
+                list.add(String.valueOf(stars[j]));
                 Collections.sort(list);
                 if (map.containsKey(list)) {
                     map.put(list, map.get(list) + 1);
@@ -105,34 +101,87 @@ public class MovieAnalyzer {
     public List<String> getTopStars(int top_k, String by){
         HashMap<String,Pair> map=new HashMap<>();
         list.forEach(x->{
-            if(!map.containsKey(x[9])) map.put(x[9],new Pair(Integer.parseInt(x[6])));
-            if(!map.containsKey(x[10])) map.put(x[9],new Pair(Integer.parseInt(x[6])));
-            if(!map.containsKey(x[11])) map.put(x[9],new Pair(Integer.parseInt(x[6])));
-            if(!map.containsKey(x[12])) map.put(x[9],new Pair(Integer.parseInt(x[6])));
-
+            if(!map.containsKey(x[9])) map.put(x[9],new Pair());
+            if(!map.containsKey(x[10])) map.put(x[10],new Pair());
+            if(!map.containsKey(x[11])) map.put(x[11],new Pair());
+            if(!map.containsKey(x[12])) map.put(x[12],new Pair());
         });
-//        if(by.equals("rating")){
-//
-//        }
-//        if(by.equals("gross")){
-//
-//        }
-        return null;
+        if(by.equals("rating")){
+            list.forEach(x->{
+                map.get(x[9]).sum+=Integer.parseInt(x[6]);
+                map.get(x[10]).sum+=Integer.parseInt(x[6]);
+                map.get(x[11]).sum+=Integer.parseInt(x[6]);
+                map.get(x[12]).sum+=Integer.parseInt(x[6]);
+                map.get(x[9]).num++;
+                map.get(x[10]).num++;
+                map.get(x[11]).num++;
+                map.get(x[12]).num++;
+            });
+        }
+        if(by.equals("gross")){
+            list.forEach(x->{
+                map.get(x[9]).sum+=Integer.parseInt(x[14]);
+                map.get(x[10]).sum+=Integer.parseInt(x[14]);
+                map.get(x[11]).sum+=Integer.parseInt(x[14]);
+                map.get(x[12]).sum+=Integer.parseInt(x[14]);
+                map.get(x[9]).num++;
+                map.get(x[10]).num++;
+                map.get(x[11]).num++;
+                map.get(x[12]).num++;
+            });
+        }
+        List<Map.Entry<String, Pair>> list1=new ArrayList<>(map.entrySet());
+        list1.sort((o1, o2) -> {
+            if(o1.getValue().getAverage()!=o2.getValue().getAverage()) return o2.getValue().getAverage()-o1.getValue().getAverage();
+            else return compare(o1.getKey(),o2.getKey());
+        });
+        List<String> ans=new ArrayList<>();
+        list1.forEach(x->ans.add(x.getKey()));
+        return ans.stream().limit(top_k).toList();
+    }
+
+    public int compare(String o1, String o2) {
+        char[] chars1=o1.toCharArray();
+        char[] chars2=o2.toCharArray();
+        int i=0;
+        while(i<chars1.length && i<chars2.length){
+            if(chars1[i]>chars2[i]){
+                return 1;
+            }else if(chars1[i]<chars2[i]){
+                return -1;
+            }else{
+                i++;
+            }
+        }
+        if(i==chars1.length){  //o1到头
+            return -1;
+        }
+        if(i== chars2.length){ //o2到头
+            return 1;
+        }
+        return 0;
     }
 
     public static void main(String[] args) {
         MovieAnalyzer analyzer = new MovieAnalyzer("C:\\Users\\徐璟源\\Desktop\\学习文件\\南科大课程\\A1_Sample\\resources\\imdb_top_500.csv");
-        analyzer.getTopStars(3,"gross").forEach(System.out::println);
+//        analyzer.getTopStars(10,"gross").forEach(System.out::println);
     }
 
+    public List<String> searchMovies(String genre, float min_rating, int max_runtime){
+        List<String[]> list1 = list.stream().filter(x->x[5].equals(genre)&&Integer.parseInt(x[6])>=min_rating&&Integer.parseInt(x[4].split(" ")[0])<=max_runtime).toList();
+        List<String> ans=new ArrayList<>(list1.size());
+        list1.forEach(x->ans.add(x[1]));
+        Collections.sort(ans);
+        return ans;
+    }
 
 }
 
 class Pair{
-    int sum;
-    int num;
-    public Pair(int sum){
-        this.sum=sum;
-        num=1;
+    public int sum=0;
+    public int num=0;
+
+    public int getAverage(){
+        return sum/num;
     }
 }
