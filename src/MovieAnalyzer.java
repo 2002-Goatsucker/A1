@@ -1,12 +1,27 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class MovieAnalyzer {
     List<String[]> list = new ArrayList<>();
 
+
+    /**
+     * description:
+     * @Param: [dataset_path]
+     * @Return:
+     */
     public MovieAnalyzer(String dataset_path) {
         BufferedReader reader;
         try {
@@ -23,7 +38,11 @@ public class MovieAnalyzer {
         }
     }
 
-
+    /**
+     * description:
+     * @Param: [str]
+     * @Return: java.lang.String[]
+     */
     public static String[] getArr(String str) {
         StringBuilder temp = new StringBuilder();
         String[] ans = new String[16];
@@ -42,6 +61,11 @@ public class MovieAnalyzer {
         return ans;
     }
 
+    /**
+     * description:
+     * @Param: []
+     * @Return: java.util.Map<java.lang.Integer, java.lang.Integer>
+     */
     public Map<Integer, Integer> getMovieCountByYear() {
         Map<String, Long> map = list.stream().collect(Collectors.groupingBy(x -> x[2], Collectors.counting()));
         List<Map.Entry<String, Long>> temp = new ArrayList<>(map.entrySet());
@@ -53,6 +77,11 @@ public class MovieAnalyzer {
     }
 
 
+    /**
+     * description:
+     * @Param: []
+     * @Return: java.util.Map<java.lang.String, java.lang.Integer>
+     */
     public Map<String, Integer> getMovieCountByGenre() {
         Map<String, Integer> ans = new LinkedHashMap<>();
         list.forEach(x -> {
@@ -81,7 +110,11 @@ public class MovieAnalyzer {
 //            if(x[1].equals("Metropolis")) System.out.println(x[7].replaceAll("^\"|\"$", "") + "M");
 //        });
 //    }
-
+    /**
+     * description:
+     * @Param: []
+     * @Return: java.util.Map<java.util.List < java.lang.String>,java.lang.Integer>
+     */
     public Map<List<String>, Integer> getCoStarCount() {
         Map<List<String>, Integer> map = new LinkedHashMap<>();
         list.forEach(x -> add(new String[]{x[10], x[11], x[12], x[13]}, map));
@@ -92,6 +125,11 @@ public class MovieAnalyzer {
         return ans;
     }
 
+    /**
+     * description:
+     * @Param: [stars, map]
+     * @Return: void
+     */
     public void add(String[] stars, Map<List<String>, Integer> map) {
         for (int i = 0; i < stars.length; ++i) {
             for (int j = i + 1; j < stars.length; ++j) {
@@ -106,6 +144,11 @@ public class MovieAnalyzer {
         }
     }
 
+    /**
+     * description:
+     * @Param: [top_k, by]
+     * @Return: java.util.List<java.lang.String>
+     */
     public List<String> getTopMovies(int top_k, String by) {
         Comparator<String[]> comparator = null;
         if (by.equals("runtime"))
@@ -132,6 +175,11 @@ public class MovieAnalyzer {
                 .toList();
     }
 
+    /**
+     * description:
+     * @Param: [top_k, by]
+     * @Return: java.util.List<java.lang.String>
+     */
     public List<String> getTopStars(int top_k, String by) {
         System.out.println();
         HashMap<String, Pair> map = new HashMap<>();
@@ -184,6 +232,11 @@ public class MovieAnalyzer {
         return ans.stream().limit(top_k).toList();
     }
 
+    /**
+     * description:
+     * @Param: [o1, o2]
+     * @Return: int
+     */
     public int compare(String o1, String o2) {
         char[] chars1 = o1.toCharArray();
         char[] chars2 = o2.toCharArray();
@@ -211,6 +264,11 @@ public class MovieAnalyzer {
 ////        analyzer.getTopStars(10,"gross").forEach(System.out::println);
 //    }
 
+    /**
+     * description:
+     * @Param: [genre, min_rating, max_runtime]
+     * @Return: java.util.List<java.lang.String>
+     */
     public List<String> searchMovies(String genre, float min_rating, int max_runtime) {
         List<String[]> list1 = list.stream().filter(x -> x[5].contains(genre) && Float.parseFloat(x[6]) >= min_rating && Float.parseFloat(x[4].split(" ")[0]) <= max_runtime).toList();
         List<String> ans = new ArrayList<>(list1.size());
@@ -226,7 +284,9 @@ class Pair {
 
 
     public double getAverage() {
-        if (num == 0) return 0;
+        if (num == 0) {
+            return 0;
+        }
         return sum / num;
     }
 
