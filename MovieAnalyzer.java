@@ -151,14 +151,16 @@ public class MovieAnalyzer {
      */
     public List<String> getTopMovies(int top_k, String by) {
         Comparator<String[]> comparator = null;
-        if (by.equals("runtime"))
+        if (by.equals("runtime")) {
             comparator = Comparator.comparing((String[] x) -> Integer.parseInt(x[4].split(" ")[0])).reversed().thenComparing(x -> x[1]);
+        }
 //                (o1, o2) -> {
 //            if (o1[4].equals(o2[4])) return compare(o1[1], o2[1]);
 //            else return Integer.parseInt(o2[4].split(" ")[0]) - Integer.parseInt(o1[4].split(" ")[0]);
 //        };
-        if (by.equals("overview"))
+        if (by.equals("overview")) {
             comparator = Comparator.comparing((String[] x) -> x[7].length()).reversed().thenComparing(x -> x[1]);
+        }
 //            comparator = (o1, o2) -> {
 //            if (o1[7].length() != o2[7].length()) {
 //                return o2[7].length() - o1[7].length();
